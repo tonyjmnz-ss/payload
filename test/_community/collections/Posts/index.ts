@@ -9,10 +9,32 @@ export const PostsCollection: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
   },
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        if (operation === 'create' && !doc.slug) {
+          await req.payload.update({
+            collection: postsSlug,
+            id: doc.id,
+            data: {
+              slug: `${doc.id}-${doc.title.toLowerCase().replace(/\s+/g, '-')}`,
+            },
+          })
+        }
+      },
+    ],
+  },
   fields: [
     {
       name: 'title',
       type: 'text',
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      admin: {
+        readOnly: true,
+      },
     },
     {
       name: 'content',
